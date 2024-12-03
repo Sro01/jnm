@@ -9,6 +9,7 @@ Thumbs.db
 
 # Vendors
 node_modules/
+webpack
 
 # Build
 dist/
