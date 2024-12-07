@@ -27,7 +27,7 @@ export class Game extends Scene {
         // Red Zone 객체 생성
         this.redZone = new RedZone(this);
 
-        // this.redZone.startRedZone();
+        this.redZone.startRedZone();
 
         // Red Zone 충돌 설정
         if (this.m_player) {
@@ -110,7 +110,15 @@ export class Game extends Scene {
                     playerData.y
                 );
                 this.playersGroup.add(this.m_player.playerSprite);
-                console.log(`Current player created: ${playerData.playerId}`);
+
+                if (this.m_player) {
+                    // 카메라 설정
+                    this.cameras.main.startFollow(this.m_player.playerSprite); // 플레이어 따라가기
+                    this.cameras.main.setBounds(0, 0, 1024, 768); // 맵 크기 제한
+                    const zoomFactor = 1024 / 600; // 플레이어 화면 확대
+                    this.cameras.main.setZoom(zoomFactor);
+                }
+                console.log(`현재 플레이어 생성: ${playerData.playerId}`);
             } else {
                 // 다른 플레이어 추가
                 this.stateManager.on("playerAdded", (playerData) => {
@@ -136,7 +144,7 @@ export class Game extends Scene {
                                 console.log("충돌");
                             }
                         );
-                        console.log(`New player added: ${playerId}`);
+                        console.log(`다른 플레이어 생성: ${playerId}`);
                     }
                 });
             }

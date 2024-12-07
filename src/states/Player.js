@@ -5,6 +5,9 @@ export default class Player extends Phaser.Events.EventEmitter {
         super(); // EventEmitter 초기화
         this.scene = scene;
 
+        const thickness = 5;
+        const textColor = "#000000";
+
         // 스프라이트 생성
         this.playerSprite = scene.physics.add.sprite(x, y, "snowmanImg");
         if (playerId === "player1") this.playerSprite.setDepth(10); // 현재 플레이어가 제일 위에 보이게
@@ -23,9 +26,10 @@ export default class Player extends Phaser.Events.EventEmitter {
 
         // playerId 텍스트 표시
         this.nameText = scene.add
-            .text(x, y - 55, `NAME: ${name}`, {
+            .text(x, y - 55, `${name}`, {
                 font: "16px Arial",
-                fill: "#ff0000",
+                fill: textColor,
+                strokeThickness: thickness,
             })
             .setOrigin(0.5);
 
@@ -33,7 +37,8 @@ export default class Player extends Phaser.Events.EventEmitter {
         this.hpText = scene.add
             .text(x, y - 35, `HP: ${hp}`, {
                 font: "16px Arial",
-                fill: "#ff0000",
+                fill: textColor,
+                strokeThickness: thickness,
             })
             .setOrigin(0.5);
 
@@ -59,7 +64,7 @@ export default class Player extends Phaser.Events.EventEmitter {
         } else if (key === "hp") {
             this.hpText.setText(`HP: ${value}`);
         } else if (key == "name") {
-            this.hpText.setText(`NAME: ${name}`);
+            this.hpText.setText(`${name}`);
         }
     }
 
