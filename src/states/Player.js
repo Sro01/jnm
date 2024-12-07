@@ -7,7 +7,7 @@ export default class Player extends Phaser.Events.EventEmitter {
         this.playerId = playerId;
 
         // 스프라이트 생성
-        this.player = scene.physics.add.sprite(x, y, "snowmanImg");
+        this.playerView = scene.physics.add.sprite(x, y, "snowmanImg");
         // this.sprite.playerId = playerId;
 
         // DataManager 생성
@@ -23,7 +23,7 @@ export default class Player extends Phaser.Events.EventEmitter {
 
         // playerId 텍스트 표시
         this.playerIdText = scene.add
-            .text(x, y - 50, `ID: ${playerId}`, {
+            .text(x, y - 55, `ID: ${playerId}`, {
                 font: "16px Arial",
                 fill: "#ff0000",
             })
@@ -31,7 +31,7 @@ export default class Player extends Phaser.Events.EventEmitter {
 
         // HP 텍스트 표시
         this.hpText = scene.add
-            .text(x, y - 30, `HP: ${hp}`, {
+            .text(x, y - 35, `HP: ${hp}`, {
                 font: "16px Arial",
                 fill: "#ff0000",
             })
@@ -44,25 +44,20 @@ export default class Player extends Phaser.Events.EventEmitter {
     // 상태 동기화
     syncWithSprite(parent, key, value) {
         if (key === "x" || key === "y") {
-            this.player.setPosition(this.data.get("x"), this.data.get("y"));
+            this.playerView.setPosition(this.data.get("x"), this.data.get("y"));
             this.hpText.setPosition(
                 this.data.get("x"),
-                this.data.get("y") - 30
+                this.data.get("y") - 35
             );
             this.playerIdText.setPosition(
                 this.data.get("x"),
-                this.data.get("y") - 50
+                this.data.get("y") - 55
             );
         } else if (key === "hp") {
             this.hpText.setText(`HP: ${value}`);
         } else if (key == "playerId") {
             this.hpText.setText(`ID: ${playerId}`);
         }
-    }
-
-    // 플레이어 상태 업데이트
-    updateState(newState) {
-        this.data.merge(newState); // 상태 병합
     }
 
     // 이동 처리
@@ -83,12 +78,14 @@ export default class Player extends Phaser.Events.EventEmitter {
     takeDamage(amount) {
         const newHp = Math.max(this.data.get("hp") - amount, 0);
         this.data.set("hp", newHp);
-        if (newHp <= 0) this.destroy();
+        if (newHp <= 0) {
+            this.destroy();
+        }
     }
 
     // 객체 제거
     destroy() {
-        this.player.destroy();
+        this.playerView.destroy();
         this.hpText.destroy();
     }
 }

@@ -2,6 +2,7 @@ import { Scene } from "phaser";
 import Main from "../main.js";
 import Player from "../states/Player.js";
 import Bullet from "../states/Bullet.js";
+import { StateManager } from "../states/StateManager.js";
 
 export class Game extends Scene {
     constructor() {
@@ -18,8 +19,13 @@ export class Game extends Scene {
             .setAlpha(0.5);
 
         // 플레이어 생성
-        this.player = new Player(this, 100, 200, "player1");
-        this.player = new Player(this, 150, 250, "player2");
+        this.m_player = new Player(this, 100, 200, "otherPlayer");
+
+        // StateManager 생성
+        this.stateManager = new StateManager(this);
+
+        // 서버 데이터 받기
+        this.receiveServerData();
 
         // 키보드 입력 설정
         this.cursors = this.input.keyboard.addKeys({
@@ -32,43 +38,56 @@ export class Game extends Scene {
 
         // HP 감소 테스트 (5초 후 실행)
         this.time.delayedCall(5000, () => {
-            this.player.takeDamage(20);
+            this.m_player.takeDamage(20);
         });
-
-        // // 텍스처 로드
-        // this.load.image("bulletTexture", "path/to/bullet.png");
 
         // 마우스 클릭 시 총알 발사
         this.input.on("pointerdown", (pointer) => {
+            // 총알 객체 생성
             const bullet = new Bullet(
                 this,
-                this.player.data.get("x"),
-                this.player.data.get("y"),
+                this.m_player.data.get("x"),
+                this.m_player.data.get("y"),
                 pointer.worldX,
                 pointer.worldY,
-                this.player.data.get("playerId")
+                this.m_player.data.get("playerId")
             );
-            // this.bullets.push(bullet);
         });
-
-        // this.input.once("pointerdown", () => {
-        //     this.scene.start("GameOver");
-        // });
     }
 
     update() {
         // 플레이어 이동 처리
         if (this.cursors.left.isDown) {
-            this.player.move("left");
+            this.m_player.move("left");
         }
         if (this.cursors.right.isDown) {
-            this.player.move("right");
+            this.m_player.move("right");
         }
         if (this.cursors.up.isDown) {
-            this.player.move("up");
+            this.m_player.move("up");
         }
         if (this.cursors.down.isDown) {
-            this.player.move("down");
+            this.m_player.move("down");
         }
     }
+
+    receiveServerData() {
+        // 서버 데이터를 가정하고 업데이트
+        const currentPlayerData = {
+            playerId: "currentPlayer",
+            x: 100,
+            y: 200,
+            hp: 100,
+        };
+
+        this.stateManager.updateState({
+            players: {
+                [currentPlayerData.playerId]: currentPlayerData,
+            },
+        });
+    }
 }
+
+// this.input.once("pointerdown", () => {
+//     this.scene.start("GameOver");
+// });
