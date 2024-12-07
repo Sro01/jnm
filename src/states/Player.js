@@ -1,29 +1,27 @@
 import Phaser from "phaser";
 
 export default class Player extends Phaser.Events.EventEmitter {
-    constructor(scene, x, y, playerId, hp = 100, speed = 5, name) {
+    constructor(scene, playerId, name, x, y, hp = 100, speed = 5) {
         super(); // EventEmitter 초기화
         this.scene = scene;
-        this.playerId = playerId;
 
         // 스프라이트 생성
-        this.playerView = scene.physics.add.sprite(x, y, "snowmanImg");
-        // this.sprite.playerId = playerId;
+        this.playerSprite = scene.physics.add.sprite(x, y, "snowmanImg");
 
         // DataManager 생성
         this.data = new Phaser.Data.DataManager(this);
         this.data.set({
+            playerId: playerId,
             x: x,
             y: y,
             hp: hp,
             speed: speed,
-            playerId: playerId,
             name: name,
         });
 
         // playerId 텍스트 표시
-        this.playerIdText = scene.add
-            .text(x, y - 55, `ID: ${playerId}`, {
+        this.nameText = scene.add
+            .text(x, y - 55, `NAME: ${name}`, {
                 font: "16px Arial",
                 fill: "#ff0000",
             })
@@ -44,19 +42,22 @@ export default class Player extends Phaser.Events.EventEmitter {
     // 상태 동기화
     syncWithSprite(parent, key, value) {
         if (key === "x" || key === "y") {
-            this.playerView.setPosition(this.data.get("x"), this.data.get("y"));
+            this.playerSprite.setPosition(
+                this.data.get("x"),
+                this.data.get("y")
+            );
             this.hpText.setPosition(
                 this.data.get("x"),
                 this.data.get("y") - 35
             );
-            this.playerIdText.setPosition(
+            this.nameText.setPosition(
                 this.data.get("x"),
                 this.data.get("y") - 55
             );
         } else if (key === "hp") {
             this.hpText.setText(`HP: ${value}`);
-        } else if (key == "playerId") {
-            this.hpText.setText(`ID: ${playerId}`);
+        } else if (key == "name") {
+            this.hpText.setText(`NAME: ${name}`);
         }
     }
 
@@ -85,7 +86,7 @@ export default class Player extends Phaser.Events.EventEmitter {
 
     // 객체 제거
     destroy() {
-        this.playerView.destroy();
+        this.playerSprite.destroy();
         this.hpText.destroy();
     }
 }

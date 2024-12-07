@@ -7,6 +7,8 @@ import { StateManager } from "../states/StateManager.js";
 export class Game extends Scene {
     constructor() {
         super("Game");
+
+        this.otherPlayers = {}; // 다른 플레이어 저장소
     }
 
     create() {
@@ -18,14 +20,8 @@ export class Game extends Scene {
             .setOrigin(0, 0)
             .setAlpha(0.5);
 
-        // 플레이어 생성
-        this.m_player = new Player(this, 100, 200, "otherPlayer");
-
         // StateManager 생성
         this.stateManager = new StateManager(this);
-
-        // 서버 데이터 받기
-        this.receiveServerData();
 
         // 키보드 입력 설정
         this.cursors = this.input.keyboard.addKeys({
@@ -36,58 +32,88 @@ export class Game extends Scene {
             space: Phaser.Input.Keyboard.KeyCodes.SPACE,
         });
 
-        // HP 감소 테스트 (5초 후 실행)
-        this.time.delayedCall(5000, () => {
-            this.m_player.takeDamage(20);
-        });
-
-        // 마우스 클릭 시 총알 발사
-        this.input.on("pointerdown", (pointer) => {
-            // 총알 객체 생성
-            const bullet = new Bullet(
-                this,
-                this.m_player.data.get("x"),
-                this.m_player.data.get("y"),
-                pointer.worldX,
-                pointer.worldY,
-                this.m_player.data.get("playerId")
-            );
-        });
+        // 플레이어 간 충돌 방지
+        this.otherPlayersGroup = this.physics.add.group(); // 충돌 그룹
     }
 
     update() {
+        this.addOtherPlayers(this.stateManager.state.getAll());
+        // 서버 데이터 받기
+        this.receiveServerData();
+
         // 플레이어 이동 처리
-        if (this.cursors.left.isDown) {
-            this.m_player.move("left");
-        }
-        if (this.cursors.right.isDown) {
-            this.m_player.move("right");
-        }
-        if (this.cursors.up.isDown) {
-            this.m_player.move("up");
-        }
-        if (this.cursors.down.isDown) {
-            this.m_player.move("down");
+        if (this.m_player) {
+            if (this.cursors.left.isDown) {
+                this.m_player.move("left");
+            }
+            if (this.cursors.right.isDown) {
+                this.m_player.move("right");
+            }
+            if (this.cursors.up.isDown) {
+                this.m_player.move("up");
+            }
+            if (this.cursors.down.isDown) {
+                this.m_player.move("down");
+            }
         }
     }
 
     receiveServerData() {
-        // 서버 데이터를 가정하고 업데이트
-        const currentPlayerData = {
-            playerId: "currentPlayer",
-            x: 100,
-            y: 200,
-            hp: 100,
-        };
-
-        this.stateManager.updateState({
-            players: {
-                [currentPlayerData.playerId]: currentPlayerData,
+        // 서버로부터 받은 데이터 예시
+        const serverPlayers = [
+            {
+                playerId: "player1",
+                name: "currentPlayer",
+                x: 100,
+                y: 200,
+                hp: 100,
+                speed: 5,
             },
+            {
+                playerId: "player2",
+                name: "otherPlayer",
+                x: 300,
+                y: 400,
+                hp: 100,
+                speed: 5,
+            },
+        ];
+
+        serverPlayers.forEach((playerData) => {
+            if (!this.m_player && playerData.playerId === "player1") {
+                // 현재 플레이어 생성
+                this.m_player = new Player(
+                    this,
+                    playerData.playerId,
+                    playerData.name,
+                    playerData.x,
+                    playerData.y
+                );
+                console.log(`Current player created: ${playerData.playerId}`);
+            } else {
+                // 다른 플레이어 추가
+                this.stateManager.addOtherPlayer(playerData);
+            }
+        });
+    }
+
+    addOtherPlayers() {
+        this.stateManager.on("playerAdded", (playerData) => {
+            const { playerId, name, x, y, hp } = playerData;
+            if (playerId !== this.m_player.data.get("playerId")) {
+                const newPlayer = new Player(this, playerId, name, x, y, hp);
+                this.otherPlayers[playerId] = newPlayer;
+
+                // 그룹에 추가
+                this.otherPlayersGroup.add(newPlayer.playerSprite);
+
+                // 충돌 감지 설정
+                this.physics.add.collider(
+                    this.m_player.playerSprite,
+                    newPlayer.playerSprite
+                );
+                console.log(`New player added: ${playerId}`);
+            }
         });
     }
 }
-
-// this.input.once("pointerdown", () => {
-//     this.scene.start("GameOver");
-// });

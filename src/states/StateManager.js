@@ -4,38 +4,50 @@ export class StateManager extends Phaser.Events.EventEmitter {
     constructor(scene) {
         super();
         this.scene = scene;
-        this.state = {};
-        this.players = {}; // 플레이어 객체 저장
+        this.state = new Phaser.Data.DataManager(scene);
+        this.state.set({
+            players: {},
+        });
+
+        // this.startServerSync();
     }
 
-    // 서버로부터 상태 업데이트
-    updateState(newState) {
-        this.state = { ...this.state, ...newState };
+    addPlayer(player) {
+        const playerId = player.data.get("playerId");
+        this.state.get("players")[playerId] = player.data.getAll();
 
-        // 플레이어 상태 처리
-        Object.entries(newState.players || {}).forEach(
-            ([playerId, playerState]) => {
-                if (!this.players[playerId]) {
-                    // 새로운 플레이어 생성
-                    this.players[playerId] = new Player(
-                        this.scene,
-                        playerState.x,
-                        playerState.y,
-                        playerId,
-                        playerState.hp
-                    );
-                } else {
-                    // 기존 플레이어 상태 업데이트
-                    this.players[playerId].updateState(playerState);
-                }
-            }
-        );
-
-        this.emit("stateUpdated", this.state); // 상태 변경 이벤트 발생
+        // Player의 상태 변경 이벤트를 StateManager에 연결
+        player.on("changedata", (parent, key, value) => {
+            this.state.get("players")[playerId][key] = value;
+            this.emit("stateUpdated", this.state.getAll());
+        });
     }
 
-    // 상태 반환
-    getState() {
-        return this.state;
+    addOtherPlayer(playerData) {
+        const playerId = playerData.playerId;
+        const players = this.state.get("players");
+
+        if (!players[playerId]) {
+            players[playerId] = playerData;
+            this.emit("playerAdded", playerData); // 이벤트 방출
+        }
+    }
+
+    updateState() {}
+
+    // Convert the state to JSON and send it to the server
+    syncWithServer() {
+        const stateJSON = JSON.stringify(this.state.getAll()); // Convert to JSON
+        console.log(stateJSON);
+        // this.socket.emit("syncState", stateJSON); // Send to server
+    }
+
+    // Start server synchronization loop
+    startServerSync() {
+        this.scene.time.addEvent({
+            delay: 1000 / 60, // 60fps
+            loop: true,
+            callback: () => this.syncWithServer(),
+        });
     }
 }
