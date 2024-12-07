@@ -1,6 +1,7 @@
 import { Scene } from "phaser";
 import Main from "../main.js";
 import Player from "../states/Player.js";
+import Bullet from "../states/Bullet.js";
 
 export class Game extends Scene {
     constructor() {
@@ -8,7 +9,7 @@ export class Game extends Scene {
     }
 
     create() {
-        this.cameras.main.setBackgroundColor(0x000000);
+        // this.cameras.main.setBackgroundColor(0x000000);
 
         /** 배경 설정 */
         this.backgroundImg = this.add
@@ -18,6 +19,7 @@ export class Game extends Scene {
 
         // 플레이어 생성
         this.player = new Player(this, 100, 200, "player1");
+        this.player = new Player(this, 150, 250, "player2");
 
         // 키보드 입력 설정
         this.cursors = this.input.keyboard.addKeys({
@@ -33,9 +35,25 @@ export class Game extends Scene {
             this.player.takeDamage(20);
         });
 
-        this.input.once("pointerdown", () => {
-            this.scene.start("GameOver");
+        // // 텍스처 로드
+        // this.load.image("bulletTexture", "path/to/bullet.png");
+
+        // 마우스 클릭 시 총알 발사
+        this.input.on("pointerdown", (pointer) => {
+            const bullet = new Bullet(
+                this,
+                this.player.data.get("x"),
+                this.player.data.get("y"),
+                pointer.worldX,
+                pointer.worldY,
+                this.player.data.get("playerId")
+            );
+            // this.bullets.push(bullet);
         });
+
+        // this.input.once("pointerdown", () => {
+        //     this.scene.start("GameOver");
+        // });
     }
 
     update() {

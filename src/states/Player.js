@@ -1,7 +1,7 @@
 import Phaser from "phaser";
 
 export default class Player extends Phaser.Events.EventEmitter {
-    constructor(scene, x, y, playerId, hp = 100, speed = 10) {
+    constructor(scene, x, y, playerId, hp = 100, speed = 5, name) {
         super(); // EventEmitter 초기화
         this.scene = scene;
         this.playerId = playerId;
@@ -18,7 +18,16 @@ export default class Player extends Phaser.Events.EventEmitter {
             hp: hp,
             speed: speed,
             playerId: playerId,
+            name: name,
         });
+
+        // playerId 텍스트 표시
+        this.playerIdText = scene.add
+            .text(x, y - 50, `ID: ${playerId}`, {
+                font: "16px Arial",
+                fill: "#ff0000",
+            })
+            .setOrigin(0.5);
 
         // HP 텍스트 표시
         this.hpText = scene.add
@@ -38,10 +47,16 @@ export default class Player extends Phaser.Events.EventEmitter {
             this.player.setPosition(this.data.get("x"), this.data.get("y"));
             this.hpText.setPosition(
                 this.data.get("x"),
-                this.data.get("y") - 20
+                this.data.get("y") - 30
+            );
+            this.playerIdText.setPosition(
+                this.data.get("x"),
+                this.data.get("y") - 50
             );
         } else if (key === "hp") {
             this.hpText.setText(`HP: ${value}`);
+        } else if (key == "playerId") {
+            this.hpText.setText(`ID: ${playerId}`);
         }
     }
 
