@@ -31,6 +31,13 @@ export class Preloader extends Scene {
         this.load.image("snowbgImg", "images/snow_background.png");
         this.load.image("snowmanImg", "images/snowman.png");
         this.load.image("snowballImg", "images/snowball.png");
+
+        // 비트맵 폰트 로드
+        this.load.bitmapFont(
+            "dotFont",
+            "fonts/dotFont.png",
+            "fonts/dotFont.fnt"
+        );
     }
 
     create() {

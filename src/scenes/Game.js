@@ -40,6 +40,8 @@ export class Game extends Scene {
 
         // 플레이어 간 충돌 방지
         this.playersGroup = this.physics.add.group();
+
+        this.shoot();
     }
 
     update() {
@@ -146,6 +148,49 @@ export class Game extends Scene {
                 });
             }
             this.stateManager.addOtherPlayer(playerData);
+        });
+    }
+
+    shoot() {
+        // 마우스 입력 설정
+        this.input.on("pointerdown", (pointer) => {
+            if (this.m_player) {
+                const { x, y } = pointer; // 클릭한 위치
+                const bullet = new Bullet(
+                    this,
+                    this.m_player.playerSprite.x,
+                    this.m_player.playerSprite.y,
+                    x,
+                    y,
+                    this.m_player.data.get("playerId") // bulletId는 플레이어 ID
+                );
+
+                // 총알 그룹에 추가
+                this.physics.add.overlap(
+                    bullet.bullet,
+                    this.playersGroup,
+                    (bulletSprite, playerSprite) => {
+                        // 충돌한 플레이어가 현재 플레이어가 아니면 처리
+                        const collidedPlayer = Object.values(
+                            this.otherPlayers
+                        ).find(
+                            (player) => player.playerSprite === playerSprite
+                        );
+
+                        if (collidedPlayer) {
+                            // HP 감소
+                            collidedPlayer.takeDamage(
+                                bullet.data.get("damage")
+                            );
+
+                            // 총알 제거
+                            bullet.destroy();
+                        }
+                    },
+                    null,
+                    this
+                );
+            }
         });
     }
 }
