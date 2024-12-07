@@ -7,6 +7,8 @@ export default class Player extends Phaser.Events.EventEmitter {
 
         // 스프라이트 생성
         this.playerSprite = scene.physics.add.sprite(x, y, "snowmanImg");
+        if (playerId === "player1") this.playerSprite.setDepth(10); // 현재 플레이어가 제일 위에 보이게
+        this.playerSprite.setCollideWorldBounds(true);
 
         // DataManager 생성
         this.data = new Phaser.Data.DataManager(this);
@@ -64,14 +66,20 @@ export default class Player extends Phaser.Events.EventEmitter {
     // 이동 처리
     move(direction) {
         const speed = this.data.get("speed");
+
         if (direction === "left") {
-            this.data.set("x", this.data.get("x") - speed);
+            if (this.data.get("x") > 0)
+                // 화면 범위 설정
+                this.data.set("x", this.data.get("x") - speed);
         } else if (direction === "right") {
-            this.data.set("x", this.data.get("x") + speed);
+            if (this.data.get("x") < 1024)
+                this.data.set("x", this.data.get("x") + speed);
         } else if (direction === "up") {
-            this.data.set("y", this.data.get("y") - speed);
+            if (this.data.get("y") > 0)
+                this.data.set("y", this.data.get("y") - speed);
         } else if (direction === "down") {
-            this.data.set("y", this.data.get("y") + speed);
+            if (this.data.get("y") < 768)
+                this.data.set("y", this.data.get("y") + speed);
         }
     }
 

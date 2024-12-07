@@ -33,15 +33,18 @@ export class Game extends Scene {
         });
 
         // 플레이어 간 충돌 방지
-        this.otherPlayersGroup = this.physics.add.group(); // 충돌 그룹
+        this.playersGroup = this.physics.add.group();
     }
 
     update() {
-        this.addOtherPlayers(this.stateManager.state.getAll());
         // 서버 데이터 받기
         this.receiveServerData();
 
         // 플레이어 이동 처리
+        this.moveHandler();
+    }
+
+    moveHandler() {
         if (this.m_player) {
             if (this.cursors.left.isDown) {
                 this.m_player.move("left");
@@ -66,16 +69,12 @@ export class Game extends Scene {
                 name: "currentPlayer",
                 x: 100,
                 y: 200,
-                hp: 100,
-                speed: 5,
             },
             {
                 playerId: "player2",
                 name: "otherPlayer",
                 x: 300,
                 y: 400,
-                hp: 100,
-                speed: 5,
             },
         ];
 
@@ -89,31 +88,38 @@ export class Game extends Scene {
                     playerData.x,
                     playerData.y
                 );
+                this.playersGroup.add(this.m_player.playerSprite);
                 console.log(`Current player created: ${playerData.playerId}`);
             } else {
                 // 다른 플레이어 추가
-                this.stateManager.addOtherPlayer(playerData);
+                this.stateManager.on("playerAdded", (playerData) => {
+                    const { playerId, name, x, y } = playerData;
+                    if (playerId !== this.m_player.data.get("playerId")) {
+                        const newPlayer = new Player(
+                            this,
+                            playerId,
+                            name,
+                            x,
+                            y
+                        );
+                        this.otherPlayers[playerId] = newPlayer;
+
+                        // 충돌 그룹에 추가
+                        this.playersGroup.add(newPlayer.playerSprite);
+
+                        // 충돌 감지 설정
+                        this.physics.add.collider(
+                            this.playersGroup,
+                            this.playersGroup,
+                            () => {
+                                console.log("충돌");
+                            }
+                        );
+                        console.log(`New player added: ${playerId}`);
+                    }
+                });
             }
-        });
-    }
-
-    addOtherPlayers() {
-        this.stateManager.on("playerAdded", (playerData) => {
-            const { playerId, name, x, y, hp } = playerData;
-            if (playerId !== this.m_player.data.get("playerId")) {
-                const newPlayer = new Player(this, playerId, name, x, y, hp);
-                this.otherPlayers[playerId] = newPlayer;
-
-                // 그룹에 추가
-                this.otherPlayersGroup.add(newPlayer.playerSprite);
-
-                // 충돌 감지 설정
-                this.physics.add.collider(
-                    this.m_player.playerSprite,
-                    newPlayer.playerSprite
-                );
-                console.log(`New player added: ${playerId}`);
-            }
+            this.stateManager.addOtherPlayer(playerData);
         });
     }
 }
