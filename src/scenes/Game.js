@@ -29,14 +29,6 @@ export class Game extends Scene {
 
         this.redZone.startRedZone();
 
-        // Red Zone 충돌 설정
-        if (this.m_player) {
-            this.redZone.enableCollision(
-                this.m_player.playerSprite,
-                this.handleRedZoneCollision.bind(this)
-            );
-        }
-
         // 키보드 입력 설정
         this.cursors = this.input.keyboard.addKeys({
             up: Phaser.Input.Keyboard.KeyCodes.W,
@@ -117,6 +109,11 @@ export class Game extends Scene {
                     this.cameras.main.setBounds(0, 0, 1024, 768); // 맵 크기 제한
                     const zoomFactor = 1024 / 600; // 플레이어 화면 확대
                     this.cameras.main.setZoom(zoomFactor);
+
+                    this.redZone.enableCollision(
+                        this.m_player.playerSprite,
+                        this.handleRedZoneCollision.bind(this)
+                    );
                 }
                 console.log(`현재 플레이어 생성: ${playerData.playerId}`);
             } else {

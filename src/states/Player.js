@@ -94,6 +94,7 @@ export default class Player extends Phaser.Events.EventEmitter {
         this.data.set("hp", newHp);
         if (newHp <= 0) {
             this.destroy();
+            this.scene.scene.start("GameOver");
         }
     }
 
