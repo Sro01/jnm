@@ -2,6 +2,7 @@ import { Scene } from "phaser";
 import Main from "../main.js";
 import Player from "../states/Player.js";
 import Bullet from "../states/Bullet.js";
+import RedZone from "../states/RedZone.js";
 import { StateManager } from "../states/StateManager.js";
 
 export class Game extends Scene {
@@ -23,6 +24,19 @@ export class Game extends Scene {
         // StateManager 생성
         this.stateManager = new StateManager(this);
 
+        // Red Zone 객체 생성
+        this.redZone = new RedZone(this);
+
+        // this.redZone.startRedZone();
+
+        // Red Zone 충돌 설정
+        if (this.m_player) {
+            this.redZone.enableCollision(
+                this.m_player.playerSprite,
+                this.handleRedZoneCollision.bind(this)
+            );
+        }
+
         // 키보드 입력 설정
         this.cursors = this.input.keyboard.addKeys({
             up: Phaser.Input.Keyboard.KeyCodes.W,
@@ -42,6 +56,13 @@ export class Game extends Scene {
 
         // 플레이어 이동 처리
         this.moveHandler();
+    }
+
+    handleRedZoneCollision(player, redZone) {
+        if (player === this.m_player.playerSprite) {
+            this.m_player.takeDamage(100); // 플레이어 데미지 입음
+            console.log("Player stepped on Red Zone!");
+        }
     }
 
     moveHandler() {
