@@ -31,6 +31,13 @@ export class Preloader extends Scene {
         this.load.image("snowbgImg", "images/snow_background.png");
         this.load.image("snowmanImg", "images/snowman.png");
         this.load.image("snowballImg", "images/snowball.png");
+
+        // 비트맵 폰트 로드
+        this.load.bitmapFont(
+            "dotFont",
+            "fonts/dotFont.png",
+            "fonts/dotFont.fnt"
+        );
     }
 
     create() {
@@ -38,6 +45,6 @@ export class Preloader extends Scene {
         //  예를 들어, 다른 씬에서 사용할 수 있도록 전역 애니메이션을 정의할 수 있습니다.
 
         //  MainMenu로 이동합니다. 카메라 페이드와 같은 씬 전환으로 교체할 수도 있습니다.
-        this.scene.start("MainMenu");
+        this.scene.start("Game");
     }
 }

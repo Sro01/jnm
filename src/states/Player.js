@@ -1,31 +1,35 @@
 import Phaser from "phaser";
 
 export default class Player extends Phaser.Events.EventEmitter {
-    constructor(scene, x, y, playerId, hp = 100, speed = 5, name) {
+    constructor(scene, playerId, name, x, y, hp = 100, speed = 5) {
         super(); // EventEmitter 초기화
         this.scene = scene;
-        this.playerId = playerId;
+
+        const thickness = 5;
+        const textColor = "#000000";
 
         // 스프라이트 생성
-        this.playerView = scene.physics.add.sprite(x, y, "snowmanImg");
-        // this.sprite.playerId = playerId;
+        this.playerSprite = scene.physics.add.sprite(x, y, "snowmanImg");
+        if (playerId === "player1") this.playerSprite.setDepth(10); // 현재 플레이어가 제일 위에 보이게
+        this.playerSprite.setCollideWorldBounds(true);
 
         // DataManager 생성
         this.data = new Phaser.Data.DataManager(this);
         this.data.set({
+            playerId: playerId,
             x: x,
             y: y,
             hp: hp,
             speed: speed,
-            playerId: playerId,
             name: name,
         });
 
         // playerId 텍스트 표시
-        this.playerIdText = scene.add
-            .text(x, y - 55, `ID: ${playerId}`, {
+        this.nameText = scene.add
+            .text(x, y - 55, `${name}`, {
                 font: "16px Arial",
-                fill: "#ff0000",
+                fill: textColor,
+                strokeThickness: thickness,
             })
             .setOrigin(0.5);
 
@@ -33,7 +37,8 @@ export default class Player extends Phaser.Events.EventEmitter {
         this.hpText = scene.add
             .text(x, y - 35, `HP: ${hp}`, {
                 font: "16px Arial",
-                fill: "#ff0000",
+                fill: textColor,
+                strokeThickness: thickness,
             })
             .setOrigin(0.5);
 
@@ -44,33 +49,42 @@ export default class Player extends Phaser.Events.EventEmitter {
     // 상태 동기화
     syncWithSprite(parent, key, value) {
         if (key === "x" || key === "y") {
-            this.playerView.setPosition(this.data.get("x"), this.data.get("y"));
+            this.playerSprite.setPosition(
+                this.data.get("x"),
+                this.data.get("y")
+            );
             this.hpText.setPosition(
                 this.data.get("x"),
                 this.data.get("y") - 35
             );
-            this.playerIdText.setPosition(
+            this.nameText.setPosition(
                 this.data.get("x"),
                 this.data.get("y") - 55
             );
         } else if (key === "hp") {
             this.hpText.setText(`HP: ${value}`);
-        } else if (key == "playerId") {
-            this.hpText.setText(`ID: ${playerId}`);
+        } else if (key == "name") {
+            this.hpText.setText(`${name}`);
         }
     }
 
     // 이동 처리
     move(direction) {
         const speed = this.data.get("speed");
+
         if (direction === "left") {
-            this.data.set("x", this.data.get("x") - speed);
+            if (this.data.get("x") > 0)
+                // 화면 범위 설정
+                this.data.set("x", this.data.get("x") - speed);
         } else if (direction === "right") {
-            this.data.set("x", this.data.get("x") + speed);
+            if (this.data.get("x") < 1024)
+                this.data.set("x", this.data.get("x") + speed);
         } else if (direction === "up") {
-            this.data.set("y", this.data.get("y") - speed);
+            if (this.data.get("y") > 0)
+                this.data.set("y", this.data.get("y") - speed);
         } else if (direction === "down") {
-            this.data.set("y", this.data.get("y") + speed);
+            if (this.data.get("y") < 768)
+                this.data.set("y", this.data.get("y") + speed);
         }
     }
 
@@ -80,12 +94,13 @@ export default class Player extends Phaser.Events.EventEmitter {
         this.data.set("hp", newHp);
         if (newHp <= 0) {
             this.destroy();
+            this.scene.scene.start("GameOver");
         }
     }
 
     // 객체 제거
     destroy() {
-        this.playerView.destroy();
+        this.playerSprite.destroy();
         this.hpText.destroy();
     }
 }
